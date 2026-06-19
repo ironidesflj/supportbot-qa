@@ -1,0 +1,18 @@
+[
+  {
+    "id": "gold_001",
+    "category": "happy_path",
+    "query": "What is the standard refund window for CloudStream Pro subscriptions?",
+    "expected_answer": "The standard refund window is 14 days from the purchase date.",
+    "expected_source": "billing_policy.md",
+    "requires_refusal": false
+  },
+  {
+    "id": "gold_002",
+    "category": "happy_path",
+    "query": "How many devices can stream simultaneously on the Premium plan?",
+    "expected_answer": "The Premium plan allows up to 4 simultaneous streams.",
+    "expected_source": "plans_overview.md",
+    "requires_refusal": false
+  }
+]

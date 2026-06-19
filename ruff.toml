@@ -1,0 +1,11 @@
+# Ruff configuration
+line-length = 88
+target-version = "py311"
+
+[lint]
+# Enable pycodestyle (E), Pyflakes (F), and docstring conventions (D)
+select = ["E", "F", "D"]
+ignore = ["D100", "D104"] # Ignore missing docstrings in public module/package
+
+[lint.pydocstyle]
+convention = "google"

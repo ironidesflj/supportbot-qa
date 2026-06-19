@@ -1,0 +1,70 @@
+"""
+Handles document ingestion, chunking, and vectorization into Qdrant.
+"""
+import os
+from typing import List
+from langchain_community.document_loaders import (
+    TextLoader,
+    PyPDFLoader,
+    UnstructuredMarkdownLoader
+)
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_openai import OpenAIEmbeddings
+from langchain_qdrant import QdrantVectorStore
+from qdrant_client import QdrantClient
+from qdrant_client.http.models import Distance, VectorParams
+
+from app.core.config import settings
+
+class IngestionPipeline:
+    def __init__(self):
+        self.embeddings = OpenAIEmbeddings(model=settings.EMBEDDING_MODEL)
+        self.client = QdrantClient(url=settings.QDRANT_URL)
+        self.text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000,
+            chunk_overlap=200
+        )
+
+    def _load_document(self, file_path: str) -> List:
+        ext = os.path.splitext(file_path)[1].lower()
+        if ext == ".pdf":
+            loader = PyPDFLoader(file_path)
+        elif ext == ".txt":
+            loader = TextLoader(file_path)
+        elif ext == ".md":
+            loader = UnstructuredMarkdownLoader(file_path)
+        else:
+            raise ValueError(f"Unsupported file extension: {ext}")
+        return loader.load()
+
+    def _ensure_collection_exists(self):
+        collections = self.client.get_collections().collections
+        collection_names = [c.name for c in collections]
+        
+        if settings.QDRANT_COLLECTION_NAME not in collection_names:
+            self.client.create_collection(
+                collection_name=settings.QDRANT_COLLECTION_NAME,
+                vectors_config=VectorParams(size=1536, distance=Distance.COSINE)
+            )
+
+    def ingest(self, file_path: str) -> int:
+        """
+        Ingests a single document into the vector store.
+        Returns the number of chunks added.
+        """
+        documents = self._load_document(file_path)
+        chunks = self.text_splitter.split_documents(documents)
+        
+        # Add metadata
+        for chunk in chunks:
+            chunk.metadata["source_file"] = os.path.basename(file_path)
+
+        self._ensure_collection_exists()
+        
+        QdrantVectorStore.from_documents(
+            documents=chunks,
+            embedding=self.embeddings,
+            url=settings.QDRANT_URL,
+            collection_name=settings.QDRANT_COLLECTION_NAME
+        )
+        return len(chunks)

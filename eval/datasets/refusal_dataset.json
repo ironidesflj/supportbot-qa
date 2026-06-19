@@ -1,0 +1,18 @@
+[
+  {
+    "id": "ref_001",
+    "category": "out_of_domain",
+    "query": "What is the capital of France?",
+    "expected_answer": "I don't have enough information in the knowledge base to answer that question.",
+    "expected_source": null,
+    "requires_refusal": true
+  },
+  {
+    "id": "ref_002",
+    "category": "missing_info",
+    "query": "What is the CEO's favorite color?",
+    "expected_answer": "I don't have enough information in the knowledge base to answer that question.",
+    "expected_source": null,
+    "requires_refusal": true
+  }
+]
