@@ -1,6 +1,4 @@
-"""
-Application configuration and environment variables management.
-"""
+"""Application configuration and environment variables management."""
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):

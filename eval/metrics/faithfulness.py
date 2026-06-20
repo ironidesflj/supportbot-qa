@@ -23,8 +23,8 @@ class FaithfulnessMetric(LLMJudge):
             f"{answer}\n"
             "\n"
             "Rules:\n"
-        - Score 1.0 if the answer is fully supported by the context.
-        - Score 0.0 if the answer contains any information not present in the context.
+            "- Score 1.0 if the answer is fully supported by the context.\n"
+            "- Score 0.0 if the answer contains any information not present in the context.\n"
         
         Respond ONLY in this JSON format:
         {{
