@@ -26,11 +26,11 @@ class ContextRelevanceMetric(LLMJudge):
             "Rules:\n"
             "- Score 1.0 if the context directly helps answer the query.\n"
             "- Score 0.0 if the context is completely unrelated to the query.\n"
-        
-        Respond ONLY in this JSON format:
-        {{
-            "score": <float>,
-            "reasoning": "<string>"
-        }}
-        """
+            "\n"
+            "Respond ONLY in this JSON format:\n"
+            "{\n"
+            '    "score": <float>,\n'
+            '    "reasoning": "<string>"\n'
+            "}\n"
+        )
         return super().evaluate(prompt).score

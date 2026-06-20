@@ -18,9 +18,7 @@ class IngestionPipeline:
     """Pipeline for loading, chunking, and embedding documents into Qdrant."""
     
     def __init__(self):
-        """
-        Initializes the ingestion pipeline with embeddings and vector store connection.
-        """
+        """Initializes pipeline with embeddings and Qdrant connection."""
         self.embeddings = OpenAIEmbeddings(model=settings.EMBEDDING_MODEL)
         self.client = QdrantClient(url=settings.QDRANT_URL)
         self.text_splitter = RecursiveCharacterTextSplitter(

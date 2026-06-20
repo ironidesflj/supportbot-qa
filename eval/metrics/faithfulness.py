@@ -24,12 +24,13 @@ class FaithfulnessMetric(LLMJudge):
             "\n"
             "Rules:\n"
             "- Score 1.0 if the answer is fully supported by the context.\n"
-            "- Score 0.0 if the answer contains any information not present in the context.\n"
-        
-        Respond ONLY in this JSON format:
-        {{
-            "score": <float>,
-            "reasoning": "<string>"
-        }}
-        """
+            "- Score 0.0 if the answer contains any information not present "
+            "in the context.\n"
+            "\n"
+            "Respond ONLY in this JSON format:\n"
+            "{\n"
+            '    "score": <float>,\n'
+            '    "reasoning": "<string>"\n'
+            "}\n"
+        )
         return super().evaluate(prompt).score
