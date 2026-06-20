@@ -39,6 +39,8 @@ The evaluation suite is a first-class feature. To run the automated tests and ge
 pytest eval/tests/ -v
 ```
 
+> **Note:** The E2E tests actually hit the OpenAI API to evaluate the pipeline. If you run the suite without setting a valid `OPENAI_API_KEY` in your `.env` or environment, the tests will be gracefully skipped.
+
 ## Security & Reliability (QA Hardening)
 This project incorporates robust QA engineering practices to ensure production readiness:
 - **Path Traversal Resilience**: Uses UUID-based file storage for document ingestion, mitigating filename spoofing.
