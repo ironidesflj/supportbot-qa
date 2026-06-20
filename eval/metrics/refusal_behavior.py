@@ -1,10 +1,6 @@
-"""
-Refusal Behavior metric: Checks if the system refused correctly when needed.
-"""
+"""Refusal Behavior metric: Checks if the system refused correctly when needed."""
 class RefusalMetric:
-    """
-    Evaluates if the system correctly refused to answer when appropriate.
-    """
+    """Evaluates if the system correctly refused to answer when appropriate."""
     
     REFUSAL_PHRASE = (
         "I don't have enough information in the knowledge base "
@@ -12,9 +8,7 @@ class RefusalMetric:
     )
     
     def evaluate(self, answer: str, requires_refusal: bool) -> bool:
-        """
-        Returns True if refusal behavior is correct, False otherwise.
-        """
+        """Returns True if refusal behavior is correct, False otherwise."""
         contains_refusal = self.REFUSAL_PHRASE in answer
         
         if requires_refusal:

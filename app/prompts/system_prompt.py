@@ -1,10 +1,9 @@
-"""
-System prompts used for the RAG generation and evaluation.
-"""
+"""System prompts used for the RAG generation and evaluation."""
 
 SYSTEM_PROMPT = (
     "You are SupportBot, an expert customer support AI assistant.\n"
-    "Your primary goal is to provide accurate answers based ONLY on the provided context.\n"
+    "Your primary goal is to provide accurate answers based ONLY on the "
+    "provided context.\n"
     "\n"
     "Rules:\n"
     "1. If the context is empty or does not contain the answer, you MUST explicitly "

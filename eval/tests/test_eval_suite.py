@@ -1,5 +1,5 @@
-"""
-Main Evaluation Test Suite.
+"""Main Evaluation Test Suite.
+
 Runs datasets against the RAG pipeline and evaluates metrics.
 """
 import pytest
@@ -23,9 +23,7 @@ for file_name in os.listdir(DATASET_DIR):
 
 @pytest.mark.parametrize("case", DATASETS)
 def test_rag_pipeline_quality(case):
-    """
-    End-to-end evaluation of the RAG pipeline for each dataset case.
-    """
+    """End-to-end evaluation of the RAG pipeline for each dataset case."""
     # 1. Retrieval
     retriever = Retriever()
     (context, sources), retrieval_latency = LatencyMetric.measure(

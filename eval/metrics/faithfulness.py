@@ -1,17 +1,11 @@
-"""
-Faithfulness metric: Does the answer stay grounded in retrieved context?
-"""
+"""Faithfulness metric: Does the answer stay grounded in retrieved context?"""
 from eval.metrics.llm_judge import LLMJudge
 
 class FaithfulnessMetric(LLMJudge):
-    """
-    Evaluates if the LLM answer is faithful to the provided context.
-    """
+    """Evaluates if the LLM answer is faithful to the provided context."""
     
     def evaluate(self, answer: str, context: str) -> float:
-        """
-        Calculates a faithfulness score between 0.0 and 1.0.
-        """
+        """Calculates a faithfulness score between 0.0 and 1.0."""
         if not context:
             # If no context, faithfulness is 1.0 if it refused, 0.0 if it answered.
             return 1.0 if "don't have enough information" in answer else 0.0
@@ -22,13 +16,13 @@ class FaithfulnessMetric(LLMJudge):
             "Faithfulness measures if the answer contains hallucinations or "
             "ungrounded statements.\n"
             "\n"
-        Context:
-        {context}
-        
-        AI Answer:
-        {answer}
-        
-        Rules:
+            "Context:\n"
+            f"{context}\n"
+            "\n"
+            "AI Answer:\n"
+            f"{answer}\n"
+            "\n"
+            "Rules:\n"
         - Score 1.0 if the answer is fully supported by the context.
         - Score 0.0 if the answer contains any information not present in the context.
         

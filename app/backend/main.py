@@ -1,6 +1,4 @@
-"""
-FastAPI application entry point.
-"""
+"""FastAPI application entry point."""
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from pydantic import BaseModel
 import os
@@ -14,29 +12,22 @@ from app.rag.generator import Generator
 app = FastAPI(title="SupportBot QA - Conversational AI Testing Platform")
 
 class ChatRequest(BaseModel):
-    """
-    Request model for the chat endpoint.
-    """
+    """Request model for the chat endpoint."""
     query: str
 
 class ChatResponse(BaseModel):
-    """
-    Response model for the chat endpoint.
-    """
+    """Response model for the chat endpoint."""
     answer: str
     sources: list[str]
 
 @app.get("/health")
 async def health_check():
-    """
-    Basic health check endpoint.
-    """
+    """Basic health check endpoint."""
     return {"status": "healthy", "service": "SupportBot Backend"}
 
 @app.post("/api/ingest")
 async def ingest_document(file: UploadFile = File(...)):
-    """
-    Endpoint to upload and ingest documents into the knowledge base.
+    """Endpoint to upload and ingest documents into the knowledge base.
     
     Supported formats: .pdf, .txt, .md.
     """
@@ -64,8 +55,7 @@ async def ingest_document(file: UploadFile = File(...)):
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    """
-    Main chat endpoint utilizing the RAG pipeline.
+    """Main chat endpoint utilizing the RAG pipeline.
     
     Processes a user query and returns an answer based on retrieved context.
     """

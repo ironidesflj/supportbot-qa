@@ -1,20 +1,14 @@
-"""
-Handles vector search and context retrieval.
-"""
+"""Handles vector search and context retrieval."""
 from qdrant_client import QdrantClient
 from langchain_qdrant import QdrantVectorStore
 from langchain_openai import OpenAIEmbeddings
 from app.core.config import settings
 
 class Retriever:
-    """
-    Handles context retrieval from the vector store.
-    """
+    """Handles context retrieval from the vector store."""
     
     def __init__(self):
-        """
-        Initializes the retriever with embeddings and Qdrant vector store.
-        """
+        """Initializes the retriever with embeddings and Qdrant vector store."""
         self.embeddings = OpenAIEmbeddings(model=settings.EMBEDDING_MODEL)
         self.client = QdrantClient(url=settings.QDRANT_URL)
         self.vector_store = QdrantVectorStore(
@@ -24,8 +18,7 @@ class Retriever:
         )
 
     def retrieve_context(self, query: str) -> tuple[str, list]:
-        """
-        Retrieves relevant context and applies a similarity threshold.
+        """Retrieves relevant context and applies a similarity threshold.
         
         Returns a tuple of (formatted_context, list_of_source_documents).
         """

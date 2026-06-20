@@ -1,6 +1,4 @@
-"""
-Handles document ingestion, chunking, and vectorization into Qdrant.
-"""
+"""Handles document ingestion, chunking, and vectorization into Qdrant."""
 import os
 from typing import List
 from langchain_community.document_loaders import (
@@ -17,14 +15,10 @@ from qdrant_client.http.models import Distance, VectorParams
 from app.core.config import settings
 
 class IngestionPipeline:
-    """
-    Pipeline for loading, chunking, and embedding documents into Qdrant.
-    """
+    """Pipeline for loading, chunking, and embedding documents into Qdrant."""
     
     def __init__(self):
-        """
-        Initializes the ingestion pipeline with embeddings and vector store connection.
-        """
+        """Initializes the ingestion pipeline with embeddings and vector store connection."""
         self.embeddings = OpenAIEmbeddings(model=settings.EMBEDDING_MODEL)
         self.client = QdrantClient(url=settings.QDRANT_URL)
         self.text_splitter = RecursiveCharacterTextSplitter(
@@ -55,8 +49,7 @@ class IngestionPipeline:
             )
 
     def ingest(self, file_path: str) -> int:
-        """
-        Ingests a single document into the vector store.
+        """Ingests a single document into the vector store.
         
         Returns the number of chunks added. Returns 0 if document is empty.
         """
