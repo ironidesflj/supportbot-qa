@@ -19,7 +19,10 @@ class IngestionPipeline:
     
     def __init__(self):
         """Initializes pipeline with embeddings and Qdrant connection."""
-        self.embeddings = OpenAIEmbeddings(model=settings.EMBEDDING_MODEL)
+        self.embeddings = OpenAIEmbeddings(
+            model=settings.EMBEDDING_MODEL,
+            openai_api_key=settings.OPENAI_API_KEY
+        )
         self.client = QdrantClient(url=settings.QDRANT_URL)
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,

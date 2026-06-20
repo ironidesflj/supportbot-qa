@@ -2,6 +2,7 @@
 import json
 from pydantic import BaseModel, ValidationError
 from langchain_openai import ChatOpenAI
+from app.core.config import settings
 
 class JudgeResponse(BaseModel):
     """Response model for the LLM judge."""
@@ -13,7 +14,11 @@ class LLMJudge:
     
     def __init__(self):
         """Initializes the LLM judge with a deterministic model."""
-        self.judge_llm = ChatOpenAI(model="gpt-4o", temperature=0.0)
+        self.judge_llm = ChatOpenAI(
+            model="gpt-4o", 
+            temperature=0.0,
+            api_key=settings.OPENAI_API_KEY
+        )
         
     def evaluate(self, prompt: str) -> JudgeResponse:
         """Invokes the judge LLM and parses the JSON response.

@@ -9,7 +9,10 @@ class Retriever:
     
     def __init__(self):
         """Initializes the retriever with embeddings and Qdrant vector store."""
-        self.embeddings = OpenAIEmbeddings(model=settings.EMBEDDING_MODEL)
+        self.embeddings = OpenAIEmbeddings(
+            model=settings.EMBEDDING_MODEL,
+            openai_api_key=settings.OPENAI_API_KEY
+        )
         self.client = QdrantClient(url=settings.QDRANT_URL)
         self.vector_store = QdrantVectorStore(
             client=self.client,

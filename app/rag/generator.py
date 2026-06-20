@@ -12,7 +12,8 @@ class Generator:
         """Initializes the Generator with the specified LLM."""
         self.llm = ChatOpenAI(
             model=settings.LLM_MODEL, 
-            temperature=0.0 # Deterministic outputs for QA
+            temperature=0.0, # Deterministic outputs for QA
+            api_key=settings.OPENAI_API_KEY
         )
         
     def generate_answer(self, query: str, context: str, sources: list) -> str:
