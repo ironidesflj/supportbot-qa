@@ -11,6 +11,7 @@ from eval.metrics.faithfulness import FaithfulnessMetric
 from eval.metrics.context_relevance import ContextRelevanceMetric
 from eval.metrics.latency import LatencyMetric
 from eval.metrics.refusal_behavior import RefusalMetric
+from app.core.config import settings
 
 # Load datasets
 DATASETS = []
@@ -21,6 +22,10 @@ for file_name in os.listdir(DATASET_DIR):
         with open(os.path.join(DATASET_DIR, file_name), "r") as f:
             DATASETS.extend(json.load(f))
 
+@pytest.mark.skipif(
+    not settings.OPENAI_API_KEY,
+    reason="OPENAI_API_KEY is empty or not set. Skipping E2E evaluation."
+)
 @pytest.mark.parametrize("case", DATASETS)
 def test_rag_pipeline_quality(case):
     """End-to-end evaluation of the RAG pipeline for each dataset case."""
