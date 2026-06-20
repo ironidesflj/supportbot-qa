@@ -1,6 +1,4 @@
-"""
-Context Relevance metric: Was the retrieved context actually relevant to the query?
-"""
+"""Context Relevance metric: Was the retrieved context relevant to the query?"""
 from eval.metrics.llm_judge import LLMJudge
 
 class ContextRelevanceMetric(LLMJudge):
