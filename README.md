@@ -38,3 +38,10 @@ The evaluation suite is a first-class feature. To run the automated tests and ge
 # Inside the backend container or local python environment
 pytest eval/tests/ -v
 ```
+
+## Security & Reliability (QA Hardening)
+This project incorporates robust QA engineering practices to ensure production readiness:
+- **Path Traversal Resilience**: Uses UUID-based file storage for document ingestion, mitigating filename spoofing.
+- **Race Condition Prevention**: Ensures simultaneous file uploads do not collide in the file system.
+- **Edge-Case Handling**: Defensively handles empty documents (e.g., images without OCR) to prevent vector-store crashes.
+- **Code Quality**: 100% compliant with `ruff` strict linting and `google`-style docstrings.

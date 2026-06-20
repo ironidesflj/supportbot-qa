@@ -5,6 +5,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from pydantic import BaseModel
 import os
 import shutil
+import uuid
 
 from app.rag.ingestion import IngestionPipeline
 from app.rag.retriever import Retriever
@@ -13,23 +14,34 @@ from app.rag.generator import Generator
 app = FastAPI(title="SupportBot QA - Conversational AI Testing Platform")
 
 class ChatRequest(BaseModel):
+    """
+    Request model for the chat endpoint.
+    """
     query: str
 
 class ChatResponse(BaseModel):
+    """
+    Response model for the chat endpoint.
+    """
     answer: str
     sources: list[str]
 
 @app.get("/health")
 async def health_check():
+    """
+    Basic health check endpoint.
+    """
     return {"status": "healthy", "service": "SupportBot Backend"}
 
 @app.post("/api/ingest")
 async def ingest_document(file: UploadFile = File(...)):
     """
     Endpoint to upload and ingest documents into the knowledge base.
-    Supported formats: .pdf, .txt, .md
+    
+    Supported formats: .pdf, .txt, .md.
     """
-    temp_file_path = f"temp_{file.filename}"
+    secure_filename = os.path.basename(file.filename)
+    temp_file_path = f"temp_{uuid.uuid4()}_{secure_filename}"
     try:
         with open(temp_file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -54,6 +66,8 @@ async def ingest_document(file: UploadFile = File(...)):
 async def chat(request: ChatRequest):
     """
     Main chat endpoint utilizing the RAG pipeline.
+    
+    Processes a user query and returns an answer based on retrieved context.
     """
     try:
         retriever = Retriever()

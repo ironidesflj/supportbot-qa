@@ -2,7 +2,14 @@
 Refusal Behavior metric: Checks if the system refused correctly when needed.
 """
 class RefusalMetric:
-    REFUSAL_PHRASE = "I don't have enough information in the knowledge base to answer that question."
+    """
+    Evaluates if the system correctly refused to answer when appropriate.
+    """
+    
+    REFUSAL_PHRASE = (
+        "I don't have enough information in the knowledge base "
+        "to answer that question."
+    )
     
     def evaluate(self, answer: str, requires_refusal: bool) -> bool:
         """

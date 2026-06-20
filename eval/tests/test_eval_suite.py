@@ -46,10 +46,21 @@ def test_rag_pipeline_quality(case):
     total_latency = retrieval_latency + generation_latency
     
     # 4. Assertions (Thresholds)
-    assert is_refusal_correct, f"Refusal behavior failed for case {case['id']}. Answer: {answer}"
-    assert faithfulness_score >= 0.8, f"Faithfulness too low ({faithfulness_score}) for case {case['id']}"
-    assert context_relevance_score >= 0.7, f"Context relevance too low ({context_relevance_score}) for case {case['id']}"
-    assert total_latency < 5.0, f"Latency too high ({total_latency:.2f}s) for case {case['id']}"
+    assert is_refusal_correct, (
+        f"Refusal behavior failed for case {case['id']}. Answer: {answer}"
+    )
+    assert faithfulness_score >= 0.8, (
+        f"Faithfulness too low ({faithfulness_score}) for case {case['id']}"
+    )
+    assert context_relevance_score >= 0.7, (
+        f"Context relevance too low ({context_relevance_score}) for case {case['id']}"
+    )
+    assert total_latency < 5.0, (
+        f"Latency too high ({total_latency:.2f}s) for case {case['id']}"
+    )
     
     # Optional: Print for CI logs
-    print(f"\nCase: {case['id']} | Latency: {total_latency:.2f}s | Faithfulness: {faithfulness_score}")
+    print(
+        f"\nCase: {case['id']} | Latency: {total_latency:.2f}s | "
+        f"Faithfulness: {faithfulness_score}"
+    )

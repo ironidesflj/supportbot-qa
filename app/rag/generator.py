@@ -8,7 +8,14 @@ from app.core.config import settings
 from app.prompts.system_prompt import SYSTEM_PROMPT
 
 class Generator:
+    """
+    Handles LLM generation with strict fallback behavior.
+    """
+    
     def __init__(self):
+        """
+        Initializes the Generator with the specified LLM.
+        """
         self.llm = ChatOpenAI(
             model=settings.LLM_MODEL, 
             temperature=0.0 # Deterministic outputs for QA
@@ -17,10 +24,14 @@ class Generator:
     def generate_answer(self, query: str, context: str, sources: list) -> str:
         """
         Generates an answer based on the context.
+        
         If context is empty, triggers hardcoded fallback.
         """
         if not context:
-            return "I don’t have enough information in the knowledge base to answer that question."
+            return (
+                "I don’t have enough information in the knowledge "
+                "base to answer that question."
+            )
         
         sources_str = ", ".join(sources) if sources else "No sources available"
         full_context = f"Context:\n{context}\n\nSources:\n{sources_str}"

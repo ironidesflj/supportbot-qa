@@ -4,15 +4,23 @@ Base class for LLM-as-a-Judge evaluations.
 import json
 from pydantic import BaseModel, ValidationError
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from app.core.config import settings
 
 class JudgeResponse(BaseModel):
+    """
+    Response model for the LLM judge.
+    """
     score: float
     reasoning: str
 
 class LLMJudge:
+    """
+    Base class for LLM-as-a-Judge evaluations.
+    """
+    
     def __init__(self):
+        """
+        Initializes the LLM judge with a deterministic model.
+        """
         self.judge_llm = ChatOpenAI(model="gpt-4o", temperature=0.0)
         
     def evaluate(self, prompt: str) -> JudgeResponse:

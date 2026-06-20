@@ -4,9 +4,8 @@ Application configuration and environment variables management.
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    """
-    Settings class to manage environment variables.
-    """
+    """Settings class to manage environment variables."""
+    
     # General
     APP_NAME: str = "SupportBot QA"
     ENVIRONMENT: str = "development"

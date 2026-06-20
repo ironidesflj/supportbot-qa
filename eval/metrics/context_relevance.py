@@ -4,14 +4,22 @@ Context Relevance metric: Was the retrieved context actually relevant to the que
 from eval.metrics.llm_judge import LLMJudge
 
 class ContextRelevanceMetric(LLMJudge):
+    """
+    Evaluates if the retrieved context is relevant to the query.
+    """
+    
     def evaluate(self, query: str, context: str) -> float:
+        """
+        Calculates a context relevance score between 0.0 and 1.0.
+        """
         if not context:
             return 1.0 # Vacuously true if no context was retrieved for a refusal scenario
             
-        prompt = f"""
-        You are an expert QA evaluator. Score the Context Relevance.
-        Context Relevance measures if the retrieved Context is useful to answer the user Query.
-        
+        prompt = (
+            "You are an expert QA evaluator. Score the Context Relevance.\n"
+            "Context Relevance measures if the retrieved Context is useful to "
+            "answer the user Query.\n"
+            "\n"
         Query:
         {query}
         

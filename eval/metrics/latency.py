@@ -5,6 +5,10 @@ import time
 from typing import Callable
 
 class LatencyMetric:
+    """
+    Utility class to measure execution latency.
+    """
+    
     @staticmethod
     def measure(func: Callable) -> tuple:
         """
