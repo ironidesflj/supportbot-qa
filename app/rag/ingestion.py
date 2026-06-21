@@ -55,7 +55,8 @@ class IngestionPipeline:
         try:
             self.client.get_collection(settings.QDRANT_COLLECTION_NAME)
         except Exception:
-            # OpenAI's text-embedding-3-small uses 1536. Gemini's text-embedding-004 uses 768.
+            # OpenAI's text-embedding-3-small uses 1536. 
+            # Gemini's text-embedding-004 uses 768.
             vector_size = 1536 if settings.LLM_PROVIDER == "openai" else 768
             self.client.create_collection(
                 collection_name=settings.QDRANT_COLLECTION_NAME,
