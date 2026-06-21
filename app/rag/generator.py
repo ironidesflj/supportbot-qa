@@ -35,8 +35,9 @@ class Generator:
                 
                 @tool
                 def search_katzilla(search_query: str) -> str:
-                    """Searches the Katzilla API for official government, financial,
-                    health, or demographic data.
+                    """Searches the Katzilla API for official external data.
+                    
+                    Fetches government, financial, health, or demographic data.
                     """
                     headers = {"X-API-Key": settings.KATZILLA_API_KEY}
                     # Using the Ask endpoint to get data and citations
@@ -69,7 +70,8 @@ class Generator:
                         "You are an AI assistant. You can use tools to fetch "
                         "primary-source external data. If you use a tool, ALWAYS "
                         "include the citation and data_hash exactly as provided. "
-                        "If no tools are relevant, say 'I don't have enough information.'"
+                        "If no tools are relevant, say 'I don't have enough "
+                        "information.'"
                     ),
                     ("human", "{input}"),
                     ("placeholder", "{agent_scratchpad}")
