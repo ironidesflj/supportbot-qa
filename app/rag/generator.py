@@ -23,7 +23,10 @@ class Generator:
         """
         if not context:
             if not settings.KATZILLA_API_KEY:
-                return "I don’t have enough information in the knowledge base to answer that question."
+                return (
+                    "I don’t have enough information in the knowledge "
+                    "base to answer that question."
+                )
             
             try:
                 import httpx
@@ -32,7 +35,9 @@ class Generator:
                 
                 @tool
                 def search_katzilla(search_query: str) -> str:
-                    """Searches the Katzilla API for official government, financial, health, or demographic data."""
+                    """Searches the Katzilla API for official government, financial,
+                    health, or demographic data.
+                    """
                     headers = {"X-API-Key": settings.KATZILLA_API_KEY}
                     # Using the Ask endpoint to get data and citations
                     response = httpx.post(
@@ -47,7 +52,9 @@ class Generator:
                     
                     data = response.json()
                     citation = data.get("citation", {})
-                    answer = data.get("data", {}).get("answer", data.get("text", str(data)))
+                    answer = data.get("data", {}).get(
+                        "answer", data.get("text", str(data))
+                    )
                     
                     hash_val = citation.get("data_hash", "N/A")
                     source = citation.get("source_url", "N/A")
@@ -57,7 +64,13 @@ class Generator:
                 tools = [search_katzilla]
                 
                 agent_prompt = ChatPromptTemplate.from_messages([
-                    ("system", "You are an AI assistant. You can use tools to fetch primary-source external data. If you use a tool, ALWAYS include the citation and data_hash exactly as provided. If no tools are relevant, say 'I don't have enough information.'"),
+                    (
+                        "system",
+                        "You are an AI assistant. You can use tools to fetch "
+                        "primary-source external data. If you use a tool, ALWAYS "
+                        "include the citation and data_hash exactly as provided. "
+                        "If no tools are relevant, say 'I don't have enough information.'"
+                    ),
                     ("human", "{input}"),
                     ("placeholder", "{agent_scratchpad}")
                 ])
@@ -67,9 +80,12 @@ class Generator:
                 
                 result = agent_executor.invoke({"input": query})
                 return result["output"]
-            except Exception as e:
+            except Exception:
                 # Fallback gracefully if httpx or agent fails
-                return "I don’t have enough information in the knowledge base to answer that question."
+                return (
+                    "I don’t have enough information in the knowledge "
+                    "base to answer that question."
+                )
         
         sources_str = ", ".join(sources) if sources else "No sources available"
         full_context = f"Context:\n{context}\n\nSources:\n{sources_str}"
