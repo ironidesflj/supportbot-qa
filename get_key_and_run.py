@@ -1,7 +1,16 @@
-import urllib.request, json, re, sys, os, time
+import urllib.request
+import json
+import re
+import sys
+import time
 
 # 1. Sign up
-req = urllib.request.Request("https://api.browser-use.com/cloud/signup", data=b'{}', method="POST", headers={"Content-Type": "application/json"})
+req = urllib.request.Request(
+    "https://api.browser-use.com/cloud/signup", 
+    data=b'{}', 
+    method="POST", 
+    headers={"Content-Type": "application/json"}
+)
 res = json.loads(urllib.request.urlopen(req).read())
 cid = res["challenge_id"]
 txt = res["challenge_text"]
@@ -37,6 +46,7 @@ with open(".env", "a") as f:
 BASE = "https://api.browser-use.com/api/v2"
 
 def call(method, path, body=None):
+    """Call the API."""
     req = urllib.request.Request(
         BASE + path,
         data=json.dumps(body).encode() if body is not None else None,
@@ -58,7 +68,9 @@ SCORE_SCHEMA = json.dumps({
 
 print("Starting QA task creation...")
 created = call("POST", "/tasks", {
-    "task": "Go to the SupportBot QA app. Read the page to confirm it loaded. The UI has a chat interface. Ask a question about 'What is this project?', submit it, and wait for a response.",
+    "task": "Go to the SupportBot QA app. Read the page to confirm it loaded. "
+            "The UI has a chat interface. Ask a question about 'What is this "
+            "project?', submit it, and wait for a response.",
     "startUrl": "https://hot-places-like.loca.lt",
     "judge": True,
     "judgeGroundTruth": "The app returned an answer or message regarding the project.",

@@ -1,9 +1,14 @@
-import urllib.request, json, sys, time
+import urllib.request
+import json
+import sys
+import time
+import subprocess
 
 KEY = "REDACTED_BROWSERUSE_KEY"
 BASE = "https://api.browser-use.com/api/v2"
 
 def call(method, path, body=None):
+    """Call the API."""
     req = urllib.request.Request(
         BASE + path,
         data=json.dumps(body).encode() if body is not None else None,
@@ -30,7 +35,11 @@ SCORE_SCHEMA = json.dumps({
 
 print("Iniciando a tarefa de QA...")
 created = call("POST", "/tasks", {
-    "task": "Acesse a URL e clique em 'Click to Continue' se houver um aviso do localtunnel. Na aplicação SupportBot QA, mande a pergunta 'What is this project?' no chat, aguarde a resposta aparecer na tela, e analise a qualidade da resposta.",
+    "task": (
+        "Acesse a URL e clique em 'Click to Continue' se houver aviso. "
+        "Na aplicação SupportBot QA, mande a pergunta 'What is this project?' no chat, "
+        "aguarde a resposta aparecer na tela e analise a qualidade."
+    ),
     "startUrl": "https://small-boxes-matter.loca.lt",
     "judge": True,
     "judgeGroundTruth": "O bot de chat retornou uma resposta para a pergunta.",
@@ -44,7 +53,6 @@ watch_url = f"https://cloud.browser-use.com/thread/{sid}"
 print(f"\nTarefa Criada! ID: {tid}")
 print(f"Acompanhe o agente ao vivo pelo navegador: {watch_url}\n")
 
-import subprocess
 cmds = [["open", "-a", "Google Chrome", watch_url], ["open", watch_url]]
 for c in cmds:
     try:
@@ -65,13 +73,13 @@ out = t.get("output", "{}")
 if isinstance(out, str):
     try:
         out = json.loads(out)
-    except:
+    except Exception:
         out = {"verdict": out}
 
 score = out.get('score', 'N/A')
 print(f"Score: {score}/5")
 print(f"Resultado: {'PASSOU' if t.get('judgeVerdict') else 'FALHOU'}")
-print(f"O que funcionou:\n" + "\n".join(f"- {i}" for i in out.get("worked", [])))
-print(f"Problemas:\n" + "\n".join(f"- {i}" for i in out.get("issues", [])))
+print("O que funcionou:\n" + "\n".join(f"- {i}" for i in out.get("worked", [])))
+print("Problemas:\n" + "\n".join(f"- {i}" for i in out.get("issues", [])))
 print(f"Detalhe do Juiz: {t.get('judgement')}")
 print(f"Custo: ${t.get('cost')} ({len(t.get('steps', []))} passos)")

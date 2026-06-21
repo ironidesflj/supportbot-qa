@@ -30,7 +30,9 @@ class IngestionPipeline:
                 model=settings.EMBEDDING_MODEL,
                 google_api_key=settings.GEMINI_API_KEY
             )
-        self.client = QdrantClient(url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY)
+        self.client = QdrantClient(
+            url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY
+        )
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
             chunk_overlap=200

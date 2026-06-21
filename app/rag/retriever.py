@@ -20,7 +20,9 @@ class Retriever:
                 model=settings.EMBEDDING_MODEL,
                 google_api_key=settings.GEMINI_API_KEY
             )
-        self.client = QdrantClient(url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY)
+        self.client = QdrantClient(
+            url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY
+        )
         self.vector_store = QdrantVectorStore(
             client=self.client,
             collection_name=settings.QDRANT_COLLECTION_NAME,
