@@ -12,7 +12,8 @@ function Ingestion() {
     formData.append('file', file);
 
     try {
-      const res = await fetch('/api/ingest', {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${apiUrl}/api/ingest`, {
         method: 'POST',
         body: formData
       });
