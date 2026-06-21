@@ -10,11 +10,12 @@ This project demonstrates real-world AI QA engineering skills. Unlike traditiona
 - **Frontend:** React, Vite, TailwindCSS
 - **Vector DB:** Qdrant
 - **LLMs:** OpenAI (GPT-4o-mini for generation, GPT-4o for LLM-as-a-Judge)
+- **External Data Agent:** Katzilla API (Fallback Agent for government/public datasets)
 - **Testing/Eval:** Pytest, Custom LLM-as-a-Judge metrics
 
 ## Architecture Overview
 The system is divided into two main domains: the RAG Application and the Evaluation Framework.
-1. **RAG Application:** Handles document ingestion (parsing, chunking, embedding), semantic search with similarity thresholds, and context-grounded generation with strict fallback behavior.
+1. **RAG Application:** Handles document ingestion (parsing, chunking, embedding), semantic search with similarity thresholds, and context-grounded generation. Includes a **Fallback Agent** (powered by Katzilla API) that securely retrieves primary-source government and financial datasets when local context is insufficient.
 2. **Evaluation Framework:** A Pytest-based suite that loads JSON datasets (golden, refusal, adversarial), executes the RAG pipeline, and evaluates the results using custom LLM-as-a-Judge metrics and latency checks.
 
 ## Setup & Installation
@@ -25,7 +26,7 @@ The system is divided into two main domains: the RAG Application and the Evaluat
 ### Steps
 1. Clone the repository.
 2. Create a `.env` file in the root directory by copying `.env.example`.
-3. Edit the `.env` file and insert your valid `OPENAI_API_KEY`.
+3. Edit the `.env` file and insert your valid `OPENAI_API_KEY` and `KATZILLA_API_KEY`.
 4. Run the stack using Docker:
    ```bash
    docker-compose up --build

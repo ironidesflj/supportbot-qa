@@ -19,13 +19,33 @@ class Generator:
     def generate_answer(self, query: str, context: str, sources: list) -> str:
         """Generates an answer based on the context.
         
-        If context is empty, triggers hardcoded fallback.
+        If context is empty, triggers Katzilla fallback agent.
         """
         if not context:
-            return (
-                "I don’t have enough information in the knowledge "
-                "base to answer that question."
-            )
+            if not settings.KATZILLA_API_KEY:
+                return "I don’t have enough information in the knowledge base to answer that question."
+            
+            try:
+                from katzilla.langchain import get_katzilla_tools
+                from langchain.agents import AgentExecutor, create_openai_tools_agent
+                
+                tools = get_katzilla_tools(
+                    api_key=settings.KATZILLA_API_KEY
+                )
+                
+                agent_prompt = ChatPromptTemplate.from_messages([
+                    ("system", "You are an AI assistant. You can use tools to fetch primary-source external data. If you use a tool, ALWAYS include the citation and data_hash exactly as provided. If no tools are relevant, say 'I don't have enough information.'"),
+                    ("human", "{input}"),
+                    ("placeholder", "{agent_scratchpad}")
+                ])
+                
+                agent = create_openai_tools_agent(self.llm, tools, agent_prompt)
+                agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=False)
+                
+                result = agent_executor.invoke({"input": query})
+                return result["output"]
+            except ImportError:
+                return "I don’t have enough information in the knowledge base to answer that question."
         
         sources_str = ", ".join(sources) if sources else "No sources available"
         full_context = f"Context:\n{context}\n\nSources:\n{sources_str}"

@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str
     LLM_MODEL: str = "gpt-4o-mini"
     EMBEDDING_MODEL: str = "text-embedding-3-small"
+    KATZILLA_API_KEY: str | None = None
     
     # Vector DB (Qdrant)
     QDRANT_URL: str = "http://localhost:6333"
