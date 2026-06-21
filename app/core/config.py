@@ -10,9 +10,11 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     
     # LLM & Embeddings
-    OPENAI_API_KEY: str
-    LLM_MODEL: str = "gpt-4o-mini"
-    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    LLM_PROVIDER: str = "gemini" # Options: 'gemini' or 'openai'
+    OPENAI_API_KEY: Optional[str] = None
+    GEMINI_API_KEY: Optional[str] = None
+    LLM_MODEL: str = "gemini-2.5-flash"
+    EMBEDDING_MODEL: str = "models/text-embedding-004"
     KATZILLA_API_KEY: Optional[str] = None
     
     # Vector DB (Qdrant)

@@ -1,5 +1,6 @@
 """Handles LLM generation with strict fallback behavior."""
 from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from app.core.config import settings
@@ -10,11 +11,18 @@ class Generator:
     
     def __init__(self):
         """Initializes the Generator with the specified LLM."""
-        self.llm = ChatOpenAI(
-            model=settings.LLM_MODEL, 
-            temperature=0.0, # Deterministic outputs for QA
-            api_key=settings.OPENAI_API_KEY
-        )
+        if settings.LLM_PROVIDER == "openai":
+            self.llm = ChatOpenAI(
+                model=settings.LLM_MODEL, 
+                temperature=0.0,
+                api_key=settings.OPENAI_API_KEY
+            )
+        else:
+            self.llm = ChatGoogleGenerativeAI(
+                model=settings.LLM_MODEL,
+                temperature=0.0,
+                google_api_key=settings.GEMINI_API_KEY
+            )
         
     def generate_answer(self, query: str, context: str, sources: list) -> str:
         """Generates an answer based on the context.
@@ -31,7 +39,7 @@ class Generator:
             try:
                 import httpx
                 from langchain_core.tools import tool
-                from langchain.agents import AgentExecutor, create_openai_tools_agent
+                from langchain.agents import AgentExecutor, create_tool_calling_agent
                 
                 @tool
                 def search_katzilla(search_query: str) -> str:
@@ -77,7 +85,7 @@ class Generator:
                     ("placeholder", "{agent_scratchpad}")
                 ])
                 
-                agent = create_openai_tools_agent(self.llm, tools, agent_prompt)
+                agent = create_tool_calling_agent(self.llm, tools, agent_prompt)
                 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=False)
                 
                 result = agent_executor.invoke({"input": query})

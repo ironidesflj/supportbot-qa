@@ -2,6 +2,7 @@
 from qdrant_client import QdrantClient
 from langchain_qdrant import QdrantVectorStore
 from langchain_openai import OpenAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from app.core.config import settings
 
 class Retriever:
@@ -9,10 +10,16 @@ class Retriever:
     
     def __init__(self):
         """Initializes the retriever with embeddings and Qdrant vector store."""
-        self.embeddings = OpenAIEmbeddings(
-            model=settings.EMBEDDING_MODEL,
-            openai_api_key=settings.OPENAI_API_KEY
-        )
+        if settings.LLM_PROVIDER == "openai":
+            self.embeddings = OpenAIEmbeddings(
+                model=settings.EMBEDDING_MODEL,
+                openai_api_key=settings.OPENAI_API_KEY
+            )
+        else:
+            self.embeddings = GoogleGenerativeAIEmbeddings(
+                model=settings.EMBEDDING_MODEL,
+                google_api_key=settings.GEMINI_API_KEY
+            )
         self.client = QdrantClient(url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY)
         self.vector_store = QdrantVectorStore(
             client=self.client,

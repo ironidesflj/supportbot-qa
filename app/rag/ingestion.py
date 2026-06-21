@@ -8,6 +8,7 @@ from langchain_community.document_loaders import (
 )
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams
@@ -19,10 +20,16 @@ class IngestionPipeline:
     
     def __init__(self):
         """Initializes pipeline with embeddings and Qdrant connection."""
-        self.embeddings = OpenAIEmbeddings(
-            model=settings.EMBEDDING_MODEL,
-            openai_api_key=settings.OPENAI_API_KEY
-        )
+        if settings.LLM_PROVIDER == "openai":
+            self.embeddings = OpenAIEmbeddings(
+                model=settings.EMBEDDING_MODEL,
+                openai_api_key=settings.OPENAI_API_KEY
+            )
+        else:
+            self.embeddings = GoogleGenerativeAIEmbeddings(
+                model=settings.EMBEDDING_MODEL,
+                google_api_key=settings.GEMINI_API_KEY
+            )
         self.client = QdrantClient(url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY)
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
