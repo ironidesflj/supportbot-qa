@@ -19,19 +19,42 @@ class Generator:
     def generate_answer(self, query: str, context: str, sources: list) -> str:
         """Generates an answer based on the context.
         
-        If context is empty, triggers Katzilla fallback agent.
+        If context is empty, triggers Katzilla fallback agent via REST API.
         """
         if not context:
             if not settings.KATZILLA_API_KEY:
                 return "I don’t have enough information in the knowledge base to answer that question."
             
             try:
-                from katzilla.langchain import get_katzilla_tools
+                import httpx
+                from langchain_core.tools import tool
                 from langchain.agents import AgentExecutor, create_openai_tools_agent
                 
-                tools = get_katzilla_tools(
-                    api_key=settings.KATZILLA_API_KEY
-                )
+                @tool
+                def search_katzilla(search_query: str) -> str:
+                    """Searches the Katzilla API for official government, financial, health, or demographic data."""
+                    headers = {"X-API-Key": settings.KATZILLA_API_KEY}
+                    # Using the Ask endpoint to get data and citations
+                    response = httpx.post(
+                        "https://api.katzilla.dev/v1/ask",
+                        json={"query": search_query},
+                        headers=headers,
+                        timeout=15.0
+                    )
+                    
+                    if response.status_code != 200:
+                        return "No data found in Katzilla."
+                    
+                    data = response.json()
+                    citation = data.get("citation", {})
+                    answer = data.get("data", {}).get("answer", data.get("text", str(data)))
+                    
+                    hash_val = citation.get("data_hash", "N/A")
+                    source = citation.get("source_url", "N/A")
+                    
+                    return f"{answer}\n\nCitation: {source} (Hash: {hash_val})"
+
+                tools = [search_katzilla]
                 
                 agent_prompt = ChatPromptTemplate.from_messages([
                     ("system", "You are an AI assistant. You can use tools to fetch primary-source external data. If you use a tool, ALWAYS include the citation and data_hash exactly as provided. If no tools are relevant, say 'I don't have enough information.'"),
@@ -44,7 +67,8 @@ class Generator:
                 
                 result = agent_executor.invoke({"input": query})
                 return result["output"]
-            except ImportError:
+            except Exception as e:
+                # Fallback gracefully if httpx or agent fails
                 return "I don’t have enough information in the knowledge base to answer that question."
         
         sources_str = ", ".join(sources) if sources else "No sources available"

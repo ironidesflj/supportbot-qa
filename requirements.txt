@@ -16,4 +16,3 @@ pytest-asyncio==0.23.5
 httpx==0.26.0
 ruff==0.2.2
 pytest-cov==4.1.0
-katzilla>=0.1.0
