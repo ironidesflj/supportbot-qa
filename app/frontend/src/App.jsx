@@ -6,25 +6,27 @@ function App() {
   const [tab, setTab] = useState('chat');
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center py-10">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">SupportBot QA Platform</h1>
+    <div className="min-h-screen flex flex-col items-center py-12 px-4">
+      <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 mb-10 text-center tracking-tight drop-shadow-sm">
+        SupportBot QA Platform
+      </h1>
       
-      <div className="mb-6 flex space-x-4">
+      <div className="mb-8 flex space-x-4 glass-panel p-2">
         <button 
           onClick={() => setTab('chat')}
-          className={`px-4 py-2 rounded ${tab === 'chat' ? 'bg-blue-600 text-white' : 'bg-white text-gray-800 border'}`}
+          className={`px-6 py-2.5 rounded-xl font-medium transition-all duration-300 ${tab === 'chat' ? 'bg-gradient-to-r from-blue-600/80 to-indigo-600/80 text-white shadow-lg shadow-blue-900/50' : 'text-slate-300 hover:text-white hover:bg-white/5'}`}
         >
           Chat Interface
         </button>
         <button 
           onClick={() => setTab('ingest')}
-          className={`px-4 py-2 rounded ${tab === 'ingest' ? 'bg-blue-600 text-white' : 'bg-white text-gray-800 border'}`}
+          className={`px-6 py-2.5 rounded-xl font-medium transition-all duration-300 ${tab === 'ingest' ? 'bg-gradient-to-r from-blue-600/80 to-indigo-600/80 text-white shadow-lg shadow-blue-900/50' : 'text-slate-300 hover:text-white hover:bg-white/5'}`}
         >
-          Knowledge Base Ingestion
+          Knowledge Base
         </button>
       </div>
 
-      <div className="w-full max-w-2xl bg-white shadow-md rounded-lg p-6">
+      <div className="w-full max-w-3xl glass-panel p-6 md:p-8 animate-fade-in-up">
         {tab === 'chat' ? <Chat /> : <Ingestion />}
       </div>
     </div>

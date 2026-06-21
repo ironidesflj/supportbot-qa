@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: supportbot-qa-backend
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn app.backend.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.11.1
+      # Note: Adicione OPENAI_API_KEY, KATZILLA_API_KEY, QDRANT_URL, e QDRANT_API_KEY no dashboard do Render.

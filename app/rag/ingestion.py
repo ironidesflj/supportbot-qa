@@ -23,7 +23,7 @@ class IngestionPipeline:
             model=settings.EMBEDDING_MODEL,
             openai_api_key=settings.OPENAI_API_KEY
         )
-        self.client = QdrantClient(url=settings.QDRANT_URL)
+        self.client = QdrantClient(url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY)
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
             chunk_overlap=200
@@ -72,6 +72,7 @@ class IngestionPipeline:
             documents=chunks,
             embedding=self.embeddings,
             url=settings.QDRANT_URL,
+            api_key=settings.QDRANT_API_KEY,
             collection_name=settings.QDRANT_COLLECTION_NAME
         )
         return len(chunks)

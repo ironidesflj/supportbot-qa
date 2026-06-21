@@ -1,4 +1,5 @@
 """Application configuration and environment variables management."""
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -12,10 +13,11 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str
     LLM_MODEL: str = "gpt-4o-mini"
     EMBEDDING_MODEL: str = "text-embedding-3-small"
-    KATZILLA_API_KEY: str | None = None
+    KATZILLA_API_KEY: Optional[str] = None
     
     # Vector DB (Qdrant)
     QDRANT_URL: str = "http://localhost:6333"
+    QDRANT_API_KEY: Optional[str] = None
     QDRANT_COLLECTION_NAME: str = "supportbot_kb"
     
     # RAG Parameters

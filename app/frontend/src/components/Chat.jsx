@@ -36,32 +36,44 @@ function Chat() {
   };
 
   return (
-    <div className="flex flex-col h-96">
-      <div className="flex-1 overflow-y-auto mb-4 space-y-4 border p-4 rounded bg-gray-50">
+    <div className="flex flex-col h-[32rem]">
+      <div className="flex-1 overflow-y-auto mb-6 space-y-6 pr-2 custom-scrollbar">
         {messages.map((msg, idx) => (
-          <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] p-3 rounded-lg ${msg.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'}`}>
-              <ReactMarkdown>{msg.text}</ReactMarkdown>
+          <div key={idx} className={`flex fade-in-up ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[85%] p-4 ${msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-bot'}`}>
+              <div className="prose prose-invert max-w-none text-sm md:text-base">
+                <ReactMarkdown>{msg.text}</ReactMarkdown>
+              </div>
               {msg.sources && msg.sources.length > 0 && (
-                <div className="mt-2 text-xs italic text-gray-500">
-                  Sources: {msg.sources.join(', ')}
+                <div className="mt-3 pt-3 border-t border-white/10 text-xs italic text-blue-200/70">
+                  <span className="font-semibold text-blue-300">Sources:</span> {msg.sources.join(', ')}
                 </div>
               )}
             </div>
           </div>
         ))}
-        {loading && <div className="text-center text-gray-500">Bot is typing...</div>}
+        {loading && (
+          <div className="flex justify-start fade-in-up">
+            <div className="chat-bubble-bot p-4 flex items-center space-x-2">
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-100"></div>
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-200"></div>
+            </div>
+          </div>
+        )}
       </div>
-      <div className="flex space-x-2">
+      <div className="flex space-x-3 mt-auto">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          className="flex-1 border rounded px-3 py-2"
-          placeholder="Ask SupportBot..."
+          className="glass-input flex-1"
+          placeholder="Ask SupportBot a question..."
         />
-        <button onClick={sendMessage} className="bg-blue-600 text-white px-4 py-2 rounded">Send</button>
+        <button onClick={sendMessage} disabled={loading} className="glass-button flex items-center justify-center min-w-[100px]">
+          {loading ? '...' : 'Send'}
+        </button>
       </div>
     </div>
   );
