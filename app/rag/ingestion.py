@@ -51,13 +51,15 @@ class IngestionPipeline:
         return loader.load()
 
     def _ensure_collection_exists(self):
-        collections = self.client.get_collections().collections
-        collection_names = [c.name for c in collections]
-        
-        if settings.QDRANT_COLLECTION_NAME not in collection_names:
+        # Check if collection exists, create if not
+        try:
+            self.client.get_collection(settings.QDRANT_COLLECTION_NAME)
+        except Exception:
+            # OpenAI's text-embedding-3-small uses 1536. Gemini's text-embedding-004 uses 768.
+            vector_size = 1536 if settings.LLM_PROVIDER == "openai" else 768
             self.client.create_collection(
                 collection_name=settings.QDRANT_COLLECTION_NAME,
-                vectors_config=VectorParams(size=1536, distance=Distance.COSINE)
+                vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE)
             )
 
     def ingest(self, file_path: str) -> int:
