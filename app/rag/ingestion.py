@@ -80,11 +80,15 @@ class IngestionPipeline:
 
         self._ensure_collection_exists()
         
-        QdrantVectorStore.from_documents(
-            documents=chunks,
-            embedding=self.embeddings,
-            url=settings.QDRANT_URL,
-            api_key=settings.QDRANT_API_KEY,
-            collection_name=settings.QDRANT_COLLECTION_NAME
+        vector_store = QdrantVectorStore(
+            client=self.client,
+            collection_name=settings.QDRANT_COLLECTION_NAME,
+            embedding=self.embeddings
         )
+        
+        batch_size = 50
+        for i in range(0, len(chunks), batch_size):
+            batch = chunks[i:i + batch_size]
+            vector_store.add_documents(batch)
+            
         return len(chunks)
