@@ -1,5 +1,6 @@
 """FastAPI application entry point."""
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 import shutil
@@ -10,6 +11,14 @@ from app.rag.retriever import Retriever
 from app.rag.generator import Generator
 
 app = FastAPI(title="SupportBot QA - Conversational AI Testing Platform")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ChatRequest(BaseModel):
     """Request model for the chat endpoint."""
