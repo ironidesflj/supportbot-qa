@@ -2,34 +2,96 @@ name: SupportBot QA CI
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: ["main", "develop"]
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: ["main", "develop"]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Lint with Ruff
+        run: ruff check .
+
   test:
     runs-on: ubuntu-latest
-
+    needs: lint
+    # Skip eval tests if GEMINI_API_KEY secret is not set (e.g. PRs from forks).
+    # Ruff + py_compile still run via the lint job above.
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      LLM_PROVIDER: gemini
+      LLM_MODEL: gemini-2.5-flash
+      EMBEDDING_MODEL: models/gemini-embedding-001
+      QDRANT_URL: http://localhost:6333
+      QDRANT_COLLECTION_NAME: ci_eval_kb
+      SIMILARITY_THRESHOLD: "0.40"
+      INGEST_API_KEY: ""
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Lint with Ruff
-      run: |
-        ruff check .
+      - name: Download NLTK data (for unstructured)
+        run: |
+          python -c "import nltk; nltk.download('punkt_tab', quiet=True); nltk.download('averaged_perceptron_tagger_eng', quiet=True)"
 
-    - name: Run Unit Tests
-      env:
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      run: |
-        pytest eval/tests/ -v --cov=app --cov=eval --cov-report=term-missing
+      - name: Start Qdrant (service container)
+        run: |
+          docker run -d --name qdrant -p 6333:6333 qdrant/qdrant:latest
+          # Wait for Qdrant to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:6333/healthz | grep -q "healthz check successful"; then
+              echo "Qdrant is ready"
+              break
+            fi
+            echo "Waiting for Qdrant... ($i/30)"
+            sleep 2
+          done
+          curl -s http://localhost:6333/healthz || (echo "Qdrant failed to start" && exit 1)
+
+      - name: Seed knowledge base with golden documents
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "GEMINI_API_KEY not set — skipping seed and eval"
+            exit 0
+          fi
+          python seed_kb.py
+
+      - name: Run eval tests
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "GEMINI_API_KEY not set — skipping eval (exit 0)"
+            exit 0
+          fi
+          pytest eval/tests/ -v --cov=app --cov=eval --cov-report=term-missing
+
+      - name: Stop Qdrant
+        if: always()
+        run: docker stop qdrant 2>/dev/null || true

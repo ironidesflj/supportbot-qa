@@ -1,13 +1,19 @@
 """Base class for LLM-as-a-Judge evaluations."""
 import json
-from langchain_openai import ChatOpenAI
+
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, ValidationError
+
 from app.core.config import settings
+from app.core.logging import get_logger
+
+logger = get_logger("supportbot.llm_judge")
 
 
 class JudgeResponse(BaseModel):
     """Response model for the LLM judge."""
+
     score: float
     reasoning: str
 
@@ -20,7 +26,7 @@ class LLMJudge:
     """
 
     def __init__(self):
-        """Initializes the judge LLM with a deterministic model."""
+        """Initialize the judge LLM with a deterministic model."""
         if settings.LLM_PROVIDER == "openai":
             self.judge_llm = ChatOpenAI(
                 model="gpt-4o",
@@ -36,7 +42,7 @@ class LLMJudge:
             )
 
     def evaluate(self, prompt: str) -> JudgeResponse:
-        """Invokes the judge LLM and parses the JSON response.
+        """Invoke the judge LLM and parse the JSON response.
 
         Returns a JudgeResponse object.
         """
@@ -53,6 +59,10 @@ class LLMJudge:
             data = json.loads(content)
             return JudgeResponse(**data)
         except (json.JSONDecodeError, ValidationError) as e:
+            logger.warning(
+                "judge_parse_failed",
+                extra={"error": str(e), "content_preview": content[:200]},
+            )
             return JudgeResponse(
                 score=0.0, reasoning=f"Judge parsing failed: {str(e)}"
             )
