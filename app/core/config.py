@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     RETRIEVAL_TOP_K: int = 3
     SIMILARITY_THRESHOLD: float = 0.75
     
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
 settings = Settings()
