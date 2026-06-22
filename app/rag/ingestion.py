@@ -1,5 +1,6 @@
 """Handles document ingestion, chunking, and vectorization into Qdrant."""
 import os
+import time
 from typing import List
 from langchain_community.document_loaders import (
     TextLoader,
@@ -87,9 +88,50 @@ class IngestionPipeline:
             embedding=self.embeddings
         )
         
-        batch_size = 50
+        # Small batches + retry to mitigate Gemini API 504 Deadline Exceeded.
+        batch_size = 5
+        total_batches = (len(chunks) + batch_size - 1) // batch_size
+
         for i in range(0, len(chunks), batch_size):
             batch = chunks[i:i + batch_size]
-            vector_store.add_documents(batch)
-            
+            batch_num = i // batch_size + 1
+
+            # Retry the batch up to 3 times with exponential backoff.
+            ingested = False
+            for attempt in range(3):
+                try:
+                    vector_store.add_documents(batch)
+                    ingested = True
+                    break
+                except Exception as e:
+                    wait = 2 ** (attempt + 1)  # 2s, 4s, 8s
+                    print(
+                        f"  Batch {batch_num}/{total_batches}: "
+                        f"attempt {attempt + 1} failed ({e}). "
+                        f"Retrying in {wait}s..."
+                    )
+                    time.sleep(wait)
+
+            # If batch still fails, try chunks one by one.
+            if not ingested:
+                print(
+                    f"  Batch {batch_num}/{total_batches}: "
+                    f"falling back to per-chunk ingestion..."
+                )
+                for chunk in batch:
+                    for attempt in range(3):
+                        try:
+                            vector_store.add_documents([chunk])
+                            break
+                        except Exception as ce:
+                            if attempt == 2:
+                                raise RuntimeError(
+                                    f"Failed to ingest chunk after 3 attempts: {ce}"
+                                ) from ce
+                            time.sleep(2 ** (attempt + 1))
+
+            print(
+                f"  Batch {batch_num}/{total_batches}: OK ({len(batch)} chunks)"
+            )
+
         return len(chunks)
