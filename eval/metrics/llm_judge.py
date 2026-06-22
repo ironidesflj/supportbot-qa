@@ -28,14 +28,19 @@ class LLMJudge:
     def __init__(self):
         """Initialize the judge LLM with a deterministic model."""
         if settings.LLM_PROVIDER == "openai":
+            # Use GPT-4o-mini for the judge (cheaper than GPT-4o, sufficient
+            # for structured JSON evaluation).
             self.judge_llm = ChatOpenAI(
-                model="gpt-4o",
+                model="gpt-4o-mini",
                 temperature=0.0,
                 api_key=settings.OPENAI_API_KEY,
             )
         else:
+            # Use gemini-2.0-flash-lite for the judge (1500 RPD free tier,
+            # vs 20 RPD for gemini-2.5-flash). Sufficient for structured
+            # JSON evaluation and avoids exhausting the main app's quota.
             self.judge_llm = ChatGoogleGenerativeAI(
-                model=settings.LLM_MODEL,
+                model="gemini-2.0-flash-lite",
                 temperature=0.0,
                 google_api_key=settings.GEMINI_API_KEY,
                 transport="rest",

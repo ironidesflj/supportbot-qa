@@ -25,7 +25,8 @@ function Ingestion() {
         setFile(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
       } else {
-        setStatus(`Error: ${data.detail || \`Request failed with status \${res.status}\`}`);
+        const errorDetail = data.detail || `Request failed with status ${res.status}`;
+        setStatus(`Error: ${errorDetail}`);
       }
     } catch (error) {
       setStatus(`Error: ${error.message}`);
