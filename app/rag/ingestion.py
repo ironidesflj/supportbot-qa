@@ -13,8 +13,10 @@ from qdrant_client.http.models import Distance, VectorParams, PointStruct
 import uuid
 
 from app.rag.embeddings import DirectGeminiEmbeddings
-
+from app.core.logging import get_logger
 from app.core.config import settings
+
+logger = get_logger("supportbot.ingestion")
 
 class IngestionPipeline:
     """Pipeline for loading, chunking, and embedding documents into Qdrant."""

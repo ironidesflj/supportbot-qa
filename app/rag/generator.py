@@ -5,6 +5,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from app.core.config import settings
 from app.prompts.system_prompt import SYSTEM_PROMPT
+from app.core.logging import get_logger
+
+logger = get_logger("supportbot.generator")
 
 class Generator:
     """Handles LLM generation with strict fallback behavior."""
@@ -91,8 +94,9 @@ class Generator:
                 
                 result = agent_executor.invoke({"input": query})
                 return result["output"]
-            except Exception:
+            except Exception as e:
                 # Fallback gracefully if httpx or agent fails
+                logger.warning("katzilla_fallback_failed", extra={"error": str(e)})
                 return (
                     "I don’t have enough information in the knowledge "
                     "base to answer that question."

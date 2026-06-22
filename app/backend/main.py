@@ -2,7 +2,7 @@
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -109,7 +109,7 @@ async def health_check():
 @app.post("/api/ingest")
 @limiter.limit(settings.RATE_LIMIT_INGEST)
 async def ingest_document(
-    request: "Request",  # noqa: F821 (slowapi requires Request param)
+    request: Request,
     file: UploadFile = File(...),
     _api_key: str = Depends(verify_ingest_api_key),
 ):
@@ -154,7 +154,7 @@ async def ingest_document(
 
 @app.post("/api/chat", response_model=ChatResponse)
 @limiter.limit(settings.RATE_LIMIT_CHAT)
-async def chat(request: "Request", chat_request: ChatRequest):  # noqa: F821
+async def chat(request: Request, chat_request: ChatRequest):
     """Main chat endpoint utilizing the RAG pipeline.
 
     Processes a user query and returns an answer based on retrieved context.

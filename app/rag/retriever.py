@@ -3,6 +3,9 @@ from qdrant_client import QdrantClient
 from langchain_openai import OpenAIEmbeddings
 from app.rag.embeddings import DirectGeminiEmbeddings
 from app.core.config import settings
+from app.core.logging import get_logger
+
+logger = get_logger("supportbot.retriever")
 
 
 class Retriever:
@@ -55,6 +58,13 @@ class Retriever:
                     sources.append(source_file)
 
         if not filtered_chunks:
+            logger.info(
+                "retrieval_empty",
+                extra={
+                    "query_len": len(query),
+                    "threshold": settings.SIMILARITY_THRESHOLD
+                },
+            )
             return "", []
 
         context_str = "\n\n---\n\n".join(filtered_chunks)
