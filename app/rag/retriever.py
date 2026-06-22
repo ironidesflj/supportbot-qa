@@ -2,7 +2,7 @@
 from qdrant_client import QdrantClient
 from langchain_qdrant import QdrantVectorStore
 from langchain_openai import OpenAIEmbeddings
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from app.rag.embeddings import DirectGeminiEmbeddings
 from app.core.config import settings
 
 class Retriever:
@@ -16,10 +16,10 @@ class Retriever:
                 openai_api_key=settings.OPENAI_API_KEY
             )
         else:
-            self.embeddings = GoogleGenerativeAIEmbeddings(
+            self.embeddings = DirectGeminiEmbeddings(
                 model=settings.EMBEDDING_MODEL,
-                google_api_key=settings.GEMINI_API_KEY,
-                transport="rest"
+                api_key=settings.GEMINI_API_KEY,
+                batch_size=5,
             )
         self.client = QdrantClient(
             url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY
