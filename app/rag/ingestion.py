@@ -10,7 +10,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
-from qdrant_client.http.models import Distance, VectorParams
+from qdrant_client.http.models import Distance, VectorParams, PointStruct
+import uuid
 
 from app.rag.embeddings import DirectGeminiEmbeddings
 
@@ -77,19 +78,34 @@ class IngestionPipeline:
             return 0
         
         # Add metadata
-        for chunk in chunks:
-            chunk.metadata["source_file"] = os.path.basename(file_path)
+        filename = os.path.basename(file_path)
+        for idx, chunk in enumerate(chunks):
+            chunk.metadata["source_file"] = filename
+            chunk.metadata["chunk_index"] = idx
 
         self._ensure_collection_exists()
-        
-        vector_store = QdrantVectorStore(
-            client=self.client,
+
+        # Embed all chunks via DirectGeminiEmbeddings (handles batching+retry).
+        texts = [chunk.page_content for chunk in chunks]
+        vectors = self.embeddings.embed_documents(texts)
+
+        # Upsert points manually to ensure metadata is persisted in payload.
+        # langchain-qdrant 0.1.3's add_documents does not reliably persist
+        # metadata, so we use PointStruct directly.
+        points = []
+        for chunk, vector in zip(chunks, vectors):
+            points.append(PointStruct(
+                id=str(uuid.uuid4()),
+                vector=vector,
+                payload={
+                    "page_content": chunk.page_content,
+                    "source_file": chunk.metadata.get("source_file", "Unknown"),
+                    "chunk_index": chunk.metadata.get("chunk_index", 0),
+                },
+            ))
+
+        self.client.upsert(
             collection_name=settings.QDRANT_COLLECTION_NAME,
-            embedding=self.embeddings
+            points=points,
         )
-        
-        # DirectGeminiEmbeddings handles batching + retry internally.
-        # QdrantVectorStore.add_documents() will call embed_documents()
-        # for the chunk list, which batches in groups of 5 with backoff.
-        vector_store.add_documents(chunks)
         return len(chunks)
