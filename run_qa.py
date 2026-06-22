@@ -20,7 +20,13 @@ try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
-    pass
+    import sys
+    print(
+        "WARNING: python-dotenv not installed; .env file was NOT loaded.\n"
+        "To fix: pip install python-dotenv   (or: pip install -r requirements.txt)\n"
+        "Falling back to shell environment variables only.\n",
+        file=sys.stderr,
+    )
 
 BASE = "https://api.browser-use.com/api/v2"
 

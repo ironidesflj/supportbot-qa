@@ -13,6 +13,16 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    print(
+        "WARNING: python-dotenv not installed; .env file was NOT loaded.\n"
+        "To fix: pip install python-dotenv\n",
+        file=sys.stderr,
+    )
+
 from app.rag.ingestion import IngestionPipeline
 
 SAMPLE_KB_DIR = Path(__file__).parent / "docs" / "sample_kb"
