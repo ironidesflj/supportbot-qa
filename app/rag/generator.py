@@ -21,7 +21,8 @@ class Generator:
             self.llm = ChatGoogleGenerativeAI(
                 model=settings.LLM_MODEL,
                 temperature=0.0,
-                google_api_key=settings.GEMINI_API_KEY
+                google_api_key=settings.GEMINI_API_KEY,
+                transport="rest"
             )
         
     def generate_answer(self, query: str, context: str, sources: list) -> str:

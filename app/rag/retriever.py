@@ -18,7 +18,8 @@ class Retriever:
         else:
             self.embeddings = GoogleGenerativeAIEmbeddings(
                 model=settings.EMBEDDING_MODEL,
-                google_api_key=settings.GEMINI_API_KEY
+                google_api_key=settings.GEMINI_API_KEY,
+                transport="rest"
             )
         self.client = QdrantClient(
             url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY
