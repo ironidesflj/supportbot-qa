@@ -15,7 +15,7 @@ services:
       - key: LLM_MODEL
         value: gemini-2.5-flash
       - key: EMBEDDING_MODEL
-        value: models/text-embedding-004
+        value: models/gemini-embedding-001
       - key: GEMINI_API_KEY
         sync: false
       - key: QDRANT_URL
@@ -29,6 +29,14 @@ services:
       - key: RETRIEVAL_TOP_K
         value: "3"
       - key: SIMILARITY_THRESHOLD
-        value: "0.75"
+        value: "0.40"
+      - key: INGEST_API_KEY
+        sync: false
+      - key: RATE_LIMIT_CHAT
+        value: "10/minute"
+      - key: RATE_LIMIT_INGEST
+        value: "5/minute"
+      - key: LOG_LEVEL
+        value: INFO
       - key: CORS_ALLOW_ORIGINS
         sync: false

@@ -1,99 +1,283 @@
 # SupportBot QA 🤖
 
-![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
-![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
-![LangChain](https://img.shields.io/badge/LangChain-121212?style=for-the-badge)
-![Qdrant](https://img.shields.io/badge/Qdrant-f90b49?style=for-the-badge)
+![React](https://img.shields.io/badge/React-18-20232a?style=for-the-badge&logo=react&logoColor=61DAFB)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.109-005571?style=for-the-badge&logo=fastapi)
+![LangChain](https://img.shields.io/badge/LangChain-0.1-121212?style=for-the-badge)
+![Qdrant](https://img.shields.io/badge/Qdrant-1.10-f90b49?style=for-the-badge)
+![Gemini](https://img.shields.io/badge/Google_Gemini-2.5-blue?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-Um sistema avançado de **Inteligência Artificial de Suporte (RAG)** focado em Qualidade (QA). O projeto permite que administradores façam upload de bases de conhecimento (PDFs ou Textos) e interajam com o conteúdo através de um Chatbot inteligente.
+An advanced **AI support system (RAG)** focused on Quality Assurance. Administrators upload knowledge bases (PDFs or texts) and interact with the content through an intelligent chatbot.
 
-Caso a resposta para a dúvida do usuário não esteja nos documentos vetorizados, o sistema possui um **Agente Autônomo de Fallback** (*Function Calling*) que busca a resposta em tempo real na internet utilizando a API do Katzilla.
+When the answer is not in the vectorized documents, the system has an **Autonomous Fallback Agent** (Function Calling) that searches the web in real time using the Katzilla API.
 
-## 🌟 Principais Funcionalidades
+## 🌟 Key Features
 
-- **Arquitetura Híbrida Multi-Model**: Suporte dinâmico para os motores da **OpenAI** (GPT-4o) ou **Google Gemini** (2.5 Flash), permitindo que a aplicação rode com altíssima precisão ou com 100% de custo zero através da chave configurável no ambiente.
-- **RAG (Retrieval-Augmented Generation)**: Vetorização e busca semântica ultrarrápida hospedada no Qdrant Cloud.
-- **Agente de Fallback**: Integração nativa de *Tool Calling* para pesquisa na Web usando o `langchain.agents` universal.
-- **Design Imersivo (Glassmorphism)**: Interface Premium em React e TailwindCSS com Dark Mode elegante, utilitários de vidro fosco translúcido e animações modernas.
-- **Automação de QA (BrowserUse)**: Scripts de teste integrados que engatilham um robô inteligente pelo navegador para validar sozinhos se a interface e as respostas da IA estão funcionais (`run_qa.py`).
+- **Hybrid Multi-Model Architecture**: Dynamic support for **Google Gemini** (2.5 Flash, default) or **OpenAI** (GPT-4o), configurable via environment variables.
+- **RAG (Retrieval-Augmented Generation)**: Vectorization and semantic search powered by Qdrant Cloud.
+- **Direct Gemini SDK Integration**: Custom `DirectGeminiEmbeddings` class bypasses the buggy `langchain-google-genai` wrapper for reliable embeddings with `gemini-embedding-001` (3072 dims).
+- **Per-Model Similarity Thresholds**: Auto-detects optimal threshold based on embedding model (no more hardcoded 0.75 cutting valid results).
+- **Web Search Fallback**: Native Tool Calling integration for real-time web search via Katzilla when KB context is insufficient.
+- **Production-Ready Backend**: Lifespan singletons, async I/O via `run_in_threadpool`, structured JSON logging, rate limiting (slowapi), optional API key auth on `/api/ingest`.
+- **Accessibility-First Frontend**: ARIA-compliant tabs, live regions for screen readers, keyboard navigation, drag-and-drop file upload.
+- **Custom Evaluation Framework**: LLM-as-a-Judge metrics (faithfulness, context relevance, refusal behavior, latency) with golden, adversarial, and refusal datasets.
+- **Real CI/CD**: GitHub Actions with Qdrant service container, automated eval runs, Ruff linting.
 
-## 🛠️ Stack de Tecnologias
+## 🛠️ Tech Stack
 
-- **Frontend**: React (Vite) + TailwindCSS
+- **Frontend**: React 18 (Vite) + TailwindCSS (glassmorphism dark theme)
 - **Backend**: Python 3.9+ + FastAPI + Uvicorn
-- **Inteligência Artificial**: LangChain, LangChain Google GenAI, LangChain OpenAI
-- **Banco de Dados (VectorDB)**: Qdrant
-- **Deploy**: Vercel (Frontend) & Render (Backend via Blueprint)
+- **AI**: LangChain, Google Gemini (direct SDK), OpenAI (optional)
+- **Vector DB**: Qdrant (local Docker or Qdrant Cloud)
+- **Eval**: Pytest + custom LLM-as-a-Judge
+- **Deploy**: Vercel (frontend) + Render (backend)
 
 ---
 
-## 🚀 Como rodar localmente
+## 🏗️ Architecture
 
-### 1. Clonando e Instalando o Backend
+```
+┌─────────────┐     ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│   Frontend  │────▶│   Backend   │────▶│    Qdrant    │     │   Gemini    │
+│  (Vercel)   │ API │  (Render)   │     │    Cloud     │     │    API      │
+│  React/Vite │     │  FastAPI    │     │  3072 dims   │     │  embedding  │
+└─────────────┘     └─────┬───────┘     └──────────────┘     │  + chat     │
+                          │                                   └─────────────┘
+                          │ fallback (no context)
+                          ▼
+                   ┌─────────────┐
+                   │  Katzilla   │  (web search agent)
+                   │   API       │
+                   └─────────────┘
+```
+
+### Key Design Decisions
+
+1. **DirectGeminiEmbeddings** (`app/rag/embeddings.py`): Custom LangChain `Embeddings` implementation that calls `google.generativeai.embed_content()` directly, bypassing the `langchain-google-genai` wrapper which was returning 504 errors (masking 404s) with the new `gemini-embedding-*` model family.
+
+2. **Per-Model Thresholds** (`app/rag/thresholds.py`): Lookup table with optimal cosine similarity thresholds per embedding model. Override via `SIMILARITY_THRESHOLD` env var still works.
+
+3. **Lifespan Singletons**: `Retriever`, `Generator`, and `IngestionPipeline` instantiated once on FastAPI startup (not per-request), eliminating redundant Qdrant/Gemini client creation.
+
+4. **Async I/O**: Sync LangChain calls wrapped with `run_in_threadpool` to avoid blocking the FastAPI event loop.
+
+5. **Hardcoded Refusal**: When context is empty AND no Katzilla fallback is configured, the system returns a deterministic refusal message (bypassing the LLM entirely) — 100% refusal behavior, zero hallucination risk.
+
+---
+
+## 🚀 Quick Start (Local)
+
+### 1. Clone and Install Backend
+
 ```bash
 git clone https://github.com/ironidesflj/supportbot-qa.git
 cd supportbot-qa
 python3 -m venv venv
-source venv/bin/activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Configurando as Variáveis de Ambiente
-Crie um arquivo `.env` na raiz do projeto (use o `.env.example` como base):
+> **Note**: Python 3.10+ recommended. The project works on 3.9 but Google deprecates 3.9 support.
 
-```env
-# Escolha o motor de IA: 'gemini' (Padrão) ou 'openai'
-LLM_PROVIDER=gemini
-GEMINI_API_KEY=sua_chave_do_google_aistudio
-OPENAI_API_KEY=
+### 2. Configure Environment Variables
 
-# Banco Vetorial e Web Search
-QDRANT_URL=sua_url_do_qdrant_cloud
-QDRANT_API_KEY=sua_chave_qdrant
-QDRANT_COLLECTION_NAME=supportbot_kb_gemini
-KATZILLA_API_KEY=sua_chave_katzilla_kz
+Copy `.env.example` to `.env` and fill in your keys:
+
+```bash
+cp .env.example .env
 ```
 
-### 3. Rodando os Servidores
-Inicie o Backend:
+Required variables:
+- `GEMINI_API_KEY` — Get yours at [Google AI Studio](https://aistudio.google.com/apikey)
+- `QDRANT_URL` + `QDRANT_API_KEY` — Get yours at [Qdrant Cloud](https://cloud.qdrant.io) (free tier available)
+
+Optional:
+- `KATZILLA_API_KEY` — Enable web search fallback (leave empty to disable)
+- `INGEST_API_KEY` — Protect `/api/ingest` with API key auth
+
+### 3. Download NLTK Data (one-time)
+
+```bash
+python3 -c "import nltk; nltk.download('punkt_tab'); nltk.download('averaged_perceptron_tagger_eng')"
+```
+
+### 4. Seed the Knowledge Base
+
+```bash
+python3 seed_kb.py
+```
+
+This ingests the sample documents in `docs/sample_kb/` into Qdrant. Expected output:
+```
+Found 2 documents to ingest:
+  - billing_policy.md
+  - plans_overview.md
+  OK  billing_policy.md: N chunks added
+  OK  plans_overview.md: N chunks added
+Done. Total chunks ingested: N
+```
+
+### 5. Run the Backend
+
 ```bash
 uvicorn app.backend.main:app --reload
 ```
 
-Em um novo terminal, inicie o Frontend:
+Backend runs on `http://localhost:8000`.
+
+### 6. Run the Frontend
+
+In a new terminal:
 ```bash
 cd app/frontend
 npm install
 npm run dev
 ```
 
+Frontend runs on `http://localhost:3000` (Vite proxy forwards `/api/*` to backend).
+
+### 7. Test the Chat
+
+Open `http://localhost:3000`, go to **Chat Interface**, and ask:
+- "What is the standard refund window?" → Should answer "14 days" with source `billing_policy.md`
+- "How many devices can stream on the Premium plan?" → Should answer "4" with source `plans_overview.md`
+- "What is the capital of France?" → Should refuse (out of domain)
+
 ---
 
-## ☁️ Instruções de Deploy na Nuvem (Free Tier)
+## ☁️ Deployment (Free Tier)
 
 ### Backend (Render)
-1. Acesse o Render e clique em **New > Blueprint**.
-2. Conecte este repositório. O arquivo `render.yaml` já está configurado com `plan: free` para bypassar a cobrança de cartão.
-3. No painel do Render, vá em **Environment** e cadastre as chaves necessárias (`GEMINI_API_KEY`, `QDRANT_URL`, etc).
-4. Copie a URL pública gerada para o seu backend.
+
+1. Go to [Render](https://render.com) → **New** → **Blueprint**
+2. Connect this repository. The `render.yaml` is pre-configured with `plan: free`.
+3. In **Environment**, add the required keys: `GEMINI_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`, etc.
+4. Copy the generated public URL.
 
 ### Frontend (Vercel)
-1. Crie um novo projeto na Vercel importando este repositório.
-2. Defina o **Root Directory** para `app/frontend`.
-3. Defina o **Framework Preset** para `Vite`.
-4. Em **Environment Variables**, crie uma variável chamada `VITE_API_URL` com o link público gerado pelo Render no passo anterior.
-5. Faça o Deploy.
+
+1. Go to [Vercel](https://vercel.com) → **New Project** → import this repository
+2. Set **Root Directory** to `app/frontend`
+3. Set **Framework Preset** to **Vite**
+4. Add **Environment Variable**: `VITE_API_URL` = your Render backend URL
+5. Deploy
 
 ---
 
-## 🤖 Rodando o Robô Avaliador (QA Tester)
+## 🤖 QA Automation (Browser-Use)
 
-Para testar o fluxo de ponta a ponta sem interagir com o site manualmente, você pode invocar o Agente de Browser (*BrowserUse*):
+The project includes an automated end-to-end QA runner using the [Browser-Use Cloud API](https://cloud.browser-use.com):
 
-Certifique-se de configurar as variáveis de ambiente `BROWSER_USE_API_KEY` e `QA_START_URL` no seu arquivo `.env`.
+### Prerequisites
+
+1. Get an API key at [cloud.browser-use.com](https://cloud.browser-use.com)
+2. Expose your app via a public URL (deploy or use a tunnel like `cloudflared`)
+3. Configure in `.env`:
+```env
+BROWSER_USE_API_KEY=bu_your_key
+QA_START_URL=https://your-app-url.vercel.app
+```
+
+### Run
 
 ```bash
 python3 run_qa.py
 ```
 
-O script irá criar uma tarefa no Browser-Use Cloud apontando para a sua `QA_START_URL` (se estiver rodando localmente, use uma ferramenta como ngrok ou cloudflared para gerar a URL pública). O script exibirá um link para você acompanhar o robô ao vivo interagindo com a sua aplicação e emitindo o laudo final de Qualidade.
+The script creates a task on the Browser-Use cloud, which launches a headless browser, navigates to your app, asks a question in the chat, and returns a structured verdict (score 1-5, what worked, issues). Watch live at the URL printed in the terminal.
+
+> **Note**: Browser-Use free tier is limited to 10 tasks/month.
+
+---
+
+## 🧪 Evaluation Framework
+
+The `eval/` directory contains a custom evaluation framework:
+
+### Datasets (`eval/datasets/`)
+- `golden_dataset.json` — Standard queries with expected answers
+- `refusal_dataset.json` — Out-of-domain queries that must trigger refusal
+- `adversarial_dataset.json` — Prompt injection and jailbreak attempts
+
+### Metrics (`eval/metrics/`)
+- **Faithfulness** — Is the answer fully supported by retrieved context? (LLM judge)
+- **Context Relevance** — Is the retrieved context relevant to the query? (LLM judge)
+- **Refusal Behavior** — Does the system refuse correctly when needed? (deterministic)
+- **Latency** — End-to-end retrieval + generation time (SLA: < 10s)
+
+### Run Eval
+
+```bash
+pytest eval/tests/ -v
+```
+
+Tests are skipped automatically if the active provider's API key is not set. In CI, they run against a live Qdrant container with the `GEMINI_API_KEY` secret.
+
+---
+
+## 📁 Project Structure
+
+```
+supportbot-qa/
+├── app/
+│   ├── backend/
+│   │   └── main.py              # FastAPI app (lifespan, auth, rate limit)
+│   ├── core/
+│   │   ├── config.py            # Pydantic settings
+│   │   └── logging.py           # JSON structured logging
+│   ├── prompts/
+│   │   └── system_prompt.py     # RAG system prompt
+│   └── rag/
+│       ├── embeddings.py        # DirectGeminiEmbeddings (bypass langchain)
+│       ├── thresholds.py        # Per-model similarity thresholds
+│       ├── ingestion.py         # Document loading + chunking + Qdrant upsert
+│       ├── retriever.py         # Vector search + threshold filtering
+│       ├── generator.py         # LLM generation + fallback orchestration
+│       └── fallback_agent.py    # Katzilla web search agent
+├── app/frontend/
+│   ├── src/
+│   │   ├── App.jsx              # Tab navigation (ARIA)
+│   │   ├── components/
+│   │   │   ├── Chat.jsx         # Chat UI (a11y, empty state, error handling)
+│   │   │   └── Ingestion.jsx    # File upload (drag-and-drop, a11y)
+│   │   └── index.css            # Glassmorphism theme
+│   └── package.json
+├── eval/
+│   ├── datasets/                # Golden, refusal, adversarial JSON
+│   ├── metrics/                 # LLM judge + latency + refusal
+│   └── tests/                   # Pytest E2E suite
+├── docs/
+│   ├── sample_kb/               # Sample knowledge base docs
+│   ├── architecture.md
+│   ├── threat-model.md
+│   ├── evaluation-framework.md
+│   ├── lessons-learned.md
+│   └── portfolio-presentation-guide.md
+├── docker/
+│   └── Dockerfile.backend       # Includes libmagic, poppler, tesseract
+├── .github/workflows/ci.yml     # Lint + integration test (Qdrant + Gemini)
+├── seed_kb.py                   # Seed Qdrant with sample docs
+├── run_qa.py                    # Browser-Use QA automation
+├── docker-compose.yml
+├── render.yaml                  # Render blueprint
+└── requirements.txt
+```
+
+---
+
+## 🔒 Security
+
+- **No secrets in Git**: `.env` is gitignored; history was purged of leaked keys
+- **API key auth on `/api/ingest`**: Set `INGEST_API_KEY` to require `X-API-Key` header
+- **Rate limiting**: 10/min on `/api/chat`, 5/min on `/api/ingest` (configurable)
+- **CORS configurable**: Set `CORS_ALLOW_ORIGINS` to restrict origins
+- **Prompt injection resistance**: System prompt + deterministic refusal when context is empty
+
+See [docs/threat-model.md](docs/threat-model.md) for details.
+
+---
+
+## 📝 License
+
+MIT — see [LICENSE](LICENSE).
