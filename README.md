@@ -89,7 +89,11 @@ npm run dev
 ## 🤖 Rodando o Robô Avaliador (QA Tester)
 
 Para testar o fluxo de ponta a ponta sem interagir com o site manualmente, você pode invocar o Agente de Browser (*BrowserUse*):
+
+Certifique-se de configurar as variáveis de ambiente `BROWSER_USE_API_KEY` e `QA_START_URL` no seu arquivo `.env`.
+
 ```bash
 python3 run_qa.py
 ```
-O script provisionará um túnel local para a sua máquina e enviará a URL para um robô nas nuvens. O navegador do robô se abrirá em uma nova janela para que você acompanhe ao vivo ele conversando com a sua aplicação e emitindo o laudo final de Qualidade.
+
+O script irá criar uma tarefa no Browser-Use Cloud apontando para a sua `QA_START_URL` (se estiver rodando localmente, use uma ferramenta como ngrok ou cloudflared para gerar a URL pública). O script exibirá um link para você acompanhar o robô ao vivo interagindo com a sua aplicação e emitindo o laudo final de Qualidade.

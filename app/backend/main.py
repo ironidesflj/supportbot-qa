@@ -12,10 +12,15 @@ from app.rag.generator import Generator
 
 app = FastAPI(title="SupportBot QA - Conversational AI Testing Platform")
 
+# CORS: configure allowed origins via env (comma-separated).
+# Example: CORS_ALLOW_ORIGINS=https://app.vercel.app,https://staging.vercel.app
+_allowed_origins = [
+    o.strip() for o in os.getenv("CORS_ALLOW_ORIGINS", "*").split(",") if o.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_allowed_origins,
+    allow_credentials="*" not in _allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )

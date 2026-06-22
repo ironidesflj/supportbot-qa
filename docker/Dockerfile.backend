@@ -2,10 +2,15 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies.
+# libmagic-dev, poppler-utils, tesseract-ocr are required by `unstructured`
+# for parsing PDF and Markdown files (see app/rag/ingestion.py).
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
+    libmagic-dev \
+    poppler-utils \
+    tesseract-ocr \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies

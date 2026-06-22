@@ -27,7 +27,7 @@ class Retriever:
         self.vector_store = QdrantVectorStore(
             client=self.client,
             collection_name=settings.QDRANT_COLLECTION_NAME,
-            embeddings=self.embeddings
+            embedding=self.embeddings
         )
 
     def retrieve_context(self, query: str) -> tuple[str, list]:
