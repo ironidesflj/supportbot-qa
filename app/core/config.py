@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     
     # RAG Parameters
     RETRIEVAL_TOP_K: int = 3
-    SIMILARITY_THRESHOLD: float = 0.30
+    SIMILARITY_THRESHOLD: float = 0.40
 
     # Security
     # If empty, /api/ingest runs in dev mode (no auth). Set in production.

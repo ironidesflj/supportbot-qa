@@ -2,6 +2,7 @@
 from qdrant_client import QdrantClient
 from langchain_openai import OpenAIEmbeddings
 from app.rag.embeddings import DirectGeminiEmbeddings
+from app.rag.thresholds import get_effective_threshold
 from app.core.config import settings
 from app.core.logging import get_logger
 
@@ -44,12 +45,13 @@ class Retriever:
             with_payload=True,
         )
 
+        threshold = get_effective_threshold()
         filtered_chunks = []
         sources = []
 
         for hit in hits:
             # Qdrant cosine distance: higher score = more similar.
-            if hit.score >= settings.SIMILARITY_THRESHOLD:
+            if hit.score >= threshold:
                 payload = hit.payload or {}
                 page_content = payload.get("page_content", "")
                 source_file = payload.get("source_file", "Unknown")
@@ -62,7 +64,8 @@ class Retriever:
                 "retrieval_empty",
                 extra={
                     "query_len": len(query),
-                    "threshold": settings.SIMILARITY_THRESHOLD
+                    "threshold": threshold,
+                    "model": settings.EMBEDDING_MODEL,
                 },
             )
             return "", []

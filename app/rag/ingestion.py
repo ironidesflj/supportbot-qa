@@ -38,8 +38,8 @@ class IngestionPipeline:
             url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY
         )
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=200
+            chunk_size=600,
+            chunk_overlap=100,
         )
 
     def _load_document(self, file_path: str) -> List:
