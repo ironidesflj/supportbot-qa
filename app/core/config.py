@@ -24,8 +24,19 @@ class Settings(BaseSettings):
     
     # RAG Parameters
     RETRIEVAL_TOP_K: int = 3
-    SIMILARITY_THRESHOLD: float = 0.75
-    
+    SIMILARITY_THRESHOLD: float = 0.30
+
+    # Security
+    # If empty, /api/ingest runs in dev mode (no auth). Set in production.
+    INGEST_API_KEY: Optional[str] = None
+
+    # Rate Limiting (slowapi format: "count/period")
+    RATE_LIMIT_CHAT: str = "10/minute"
+    RATE_LIMIT_INGEST: str = "5/minute"
+
+    # Logging: "json" (production) or "console" (dev, human-readable)
+    LOG_LEVEL: str = "INFO"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
