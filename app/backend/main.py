@@ -132,7 +132,7 @@ async def ingest_document(
 
         logger.info(
             "ingest_success",
-            extra={"filename": secure_filename, "chunks": chunks_count},
+            extra={"source_filename": secure_filename, "chunks": chunks_count},
         )
         return {
             "filename": file.filename,
@@ -144,7 +144,8 @@ async def ingest_document(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(
-            "ingest_failed", extra={"error": str(e), "filename": secure_filename}
+            "ingest_failed",
+            extra={"error": str(e), "source_filename": secure_filename},
         )
         raise HTTPException(status_code=500, detail=f"Ingestion failed: {str(e)}")
     finally:
