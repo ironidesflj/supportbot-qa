@@ -1,29 +1,29 @@
 """Faithfulness metric: Does the answer stay grounded in retrieved context?"""
 from eval.metrics.llm_judge import LLMJudge
-
-# Canonical refusal phrase (must match Generator.REFUSAL_MESSAGE).
-REFUSAL_PHRASE = "don't have enough information"
+from eval.metrics.refusal_patterns import is_refusal
 
 
 class FaithfulnessMetric(LLMJudge):
     """Evaluates if the LLM answer is faithful to the provided context.
 
-    A correct refusal (answer contains the canonical refusal phrase) is
-    always considered faithful (score=1.0), regardless of whether context
-    was retrieved. This prevents penalizing the system for correctly
-    refusing when the retrieved context is irrelevant.
+    A correct refusal (answer is detected as a refusal by is_refusal())
+    is always considered faithful (score=1.0), regardless of whether
+    context was retrieved. This prevents penalizing the system for
+    correctly refusing when the retrieved context is irrelevant or when
+    the query is adversarial (prompt injection, prompt leakage).
     """
 
     def evaluate(self, answer: str, context: str) -> float:
         """Calculates a faithfulness score between 0.0 and 1.0.
 
         Rules:
-        - If answer contains the refusal phrase: return 1.0 (correct refusal).
-        - If context is empty: return 0.0 (should have refused).
+        - If answer is a refusal: return 1.0 (correct refusal is faithful).
+        - If context is empty and answer is not a refusal: return 0.0
+          (should have refused but didn't — hallucination).
         - Otherwise: ask the LLM judge to evaluate faithfulness.
         """
-        # Correct refusal is always faithful.
-        if REFUSAL_PHRASE in answer.lower():
+        # Correct refusal is always faithful (uses shared detection).
+        if is_refusal(answer):
             return 1.0
 
         # No context and no refusal = hallucination.
