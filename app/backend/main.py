@@ -12,6 +12,7 @@ from starlette.concurrency import run_in_threadpool
 
 from app.core.config import settings
 from app.core.logging import get_logger
+from app.core.nltk_setup import ensure_nltk_resources  # noqa: F401 — side-effect import
 from app.rag.generator import Generator
 from app.rag.ingestion import IngestionPipeline
 from app.rag.retriever import Retriever
