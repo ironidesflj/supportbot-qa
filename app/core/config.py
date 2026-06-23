@@ -26,6 +26,13 @@ class Settings(BaseSettings):
     RETRIEVAL_TOP_K: int = 3
     SIMILARITY_THRESHOLD: float = 0.40
 
+    # Eval Judge Model (defaults to LLM_MODEL to guarantee compatibility).
+    # Override via env if you want a separate quota pool for the judge.
+    # NOTE: gemini-2.0-flash-lite had quota=0 for some keys; stick with
+    # LLM_MODEL (gemini-2.5-flash) unless you've confirmed your key has
+    # quota for an alternative.
+    JUDGE_MODEL: Optional[str] = None
+
     # Security
     # If empty, /api/ingest runs in dev mode (no auth). Set in production.
     INGEST_API_KEY: Optional[str] = None

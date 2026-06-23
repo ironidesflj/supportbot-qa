@@ -29,21 +29,29 @@ class LLMJudge:
         """Initialize the judge LLM with a deterministic model."""
         if settings.LLM_PROVIDER == "openai":
             # Use GPT-4o-mini for the judge (cheaper than GPT-4o, sufficient
-            # for structured JSON evaluation).
+            # for structured JSON evaluation). max_retries=1 to fail fast
+            # in CI — quota errors are permanent, retrying wastes 30+ min.
             self.judge_llm = ChatOpenAI(
                 model="gpt-4o-mini",
                 temperature=0.0,
                 api_key=settings.OPENAI_API_KEY,
+                max_retries=1,
             )
         else:
-            # Use gemini-2.0-flash-lite for the judge (1500 RPD free tier,
-            # vs 20 RPD for gemini-2.5-flash). Sufficient for structured
-            # JSON evaluation and avoids exhausting the main app's quota.
+            # Use JUDGE_MODEL if explicitly set, otherwise fall back to
+            # LLM_MODEL (the same model as the main app). This guarantees
+            # the judge uses a model we know works with the configured API
+            # key — no guessing about per-model quota allocations.
+            # max_retries=1 to fail fast on quota errors (default Tenacity
+            # of 6 retries with exponential backoff hangs for 30+ min on
+            # permanent errors like quota=0).
+            judge_model = settings.JUDGE_MODEL or settings.LLM_MODEL
             self.judge_llm = ChatGoogleGenerativeAI(
-                model="gemini-2.0-flash-lite",
+                model=judge_model,
                 temperature=0.0,
                 google_api_key=settings.GEMINI_API_KEY,
                 transport="rest",
+                max_retries=1,
             )
 
     def evaluate(self, prompt: str) -> JudgeResponse:

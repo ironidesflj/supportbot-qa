@@ -28,6 +28,7 @@ class Generator:
                 model=settings.LLM_MODEL,
                 temperature=0.0,
                 api_key=settings.OPENAI_API_KEY,
+                max_retries=2,
             )
         else:
             self.llm = ChatGoogleGenerativeAI(
@@ -35,6 +36,7 @@ class Generator:
                 temperature=0.0,
                 google_api_key=settings.GEMINI_API_KEY,
                 transport="rest",
+                max_retries=2,
             )
 
         # Fallback agent is only built if Katzilla key is configured.
