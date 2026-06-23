@@ -1,10 +1,24 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 function Ingestion() {
   const [file, setFile] = useState(null);
   const [status, setStatus] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [apiKey, setApiKey] = useState('');
   const fileInputRef = useRef(null);
+
+  // Load saved API key from localStorage on mount.
+  useEffect(() => {
+    const saved = localStorage.getItem('supportbot_ingest_api_key') || '';
+    setApiKey(saved);
+  }, []);
+
+  // Persist API key to localStorage whenever it changes.
+  const handleApiKeyChange = (e) => {
+    const value = e.target.value;
+    setApiKey(value);
+    localStorage.setItem('supportbot_ingest_api_key', value);
+  };
 
   const handleUpload = async () => {
     if (!file) return;
@@ -13,10 +27,18 @@ function Ingestion() {
     const formData = new FormData();
     formData.append('file', file);
 
+    // Build headers. X-API-Key is sent only if the user has entered a key.
+    // In dev mode (INGEST_API_KEY not set on backend), the key is ignored.
+    const headers = {};
+    if (apiKey.trim()) {
+      headers['X-API-Key'] = apiKey.trim();
+    }
+
     try {
       const apiUrl = import.meta.env.VITE_API_URL || '';
       const res = await fetch(`${apiUrl}/api/ingest`, {
         method: 'POST',
+        headers,
         body: formData,
       });
       const data = await res.json();
@@ -61,6 +83,29 @@ function Ingestion() {
           <span className="font-mono bg-white/10 px-1 py-0.5 rounded text-blue-300">.pdf</span>,{' '}
           <span className="font-mono bg-white/10 px-1 py-0.5 rounded text-blue-300">.txt</span>,{' '}
           <span className="font-mono bg-white/10 px-1 py-0.5 rounded text-blue-300">.md</span>
+        </p>
+      </div>
+
+      {/* Admin API Key input — required when INGEST_API_KEY is set on the backend. */}
+      <div>
+        <label htmlFor="api-key-input" className="block text-sm font-medium text-slate-300 mb-2">
+          Admin API Key
+          <span className="ml-2 text-xs font-normal text-slate-500">
+            (required if backend has INGEST_API_KEY set)
+          </span>
+        </label>
+        <input
+          id="api-key-input"
+          type="password"
+          value={apiKey}
+          onChange={handleApiKeyChange}
+          placeholder="Paste your ingest API key here"
+          className="glass-input w-full"
+          autoComplete="off"
+          aria-label="Admin API key for document ingestion"
+        />
+        <p className="mt-1 text-xs text-slate-500">
+          Stored locally in your browser only. Never sent to the server except as the X-API-Key header.
         </p>
       </div>
 
