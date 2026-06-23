@@ -84,8 +84,16 @@ def test_rag_pipeline_quality(case):
     # 3. Metrics Evaluation (judge calls — most likely to hit quota)
     try:
         faithfulness_score = FaithfulnessMetric().evaluate(answer, context)
+    except Exception as e:
+        if _is_quota_error(e):
+            pytest.skip(f"Quota exceeded during LLM judge evaluation: {e}")
+        raise
+
+    # ContextRelevanceMetric needs the answer to detect refusals.
+    # Run it in the same try/except for consistency.
+    try:
         context_relevance_score = ContextRelevanceMetric().evaluate(
-            case["query"], context
+            case["query"], context, answer
         )
     except Exception as e:
         if _is_quota_error(e):
