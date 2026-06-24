@@ -13,6 +13,7 @@ from qdrant_client.http.models import Distance, VectorParams, PointStruct
 import uuid
 
 from app.rag.embeddings import DirectGeminiEmbeddings
+from app.core.nltk_setup import ensure_nltk_resources  # noqa: F401 — side-effect: downloads NLTK data on first import
 from app.core.logging import get_logger
 from app.core.config import settings
 
